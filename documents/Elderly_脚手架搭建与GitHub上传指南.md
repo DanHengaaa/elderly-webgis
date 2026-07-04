@@ -43,6 +43,8 @@ D:\Elderly\                  ← Git 仓库根目录
 
 ---
 
+![image-20260625124120298](C:\Users\HP\AppData\Roaming\Typora\typora-user-images\image-20260625124120298.png)
+
 ## 2. 【关键第一步】先建 .gitignore
 
 **务必在 `git add` 之前完成这一步**，否则 `node_modules`、`data`、编译产物会被提交，仓库会爆，且后续很难清理。

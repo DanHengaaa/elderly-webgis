@@ -1,4 +1,4 @@
-package com.hhu.elderly.backend_java;
+package com.hhu.elderly;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,0 +1,18 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/elderly_care
+    username: postgres
+    password: 237709
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+logging:
+  level:
+    org.springframework.jdbc.core: info
