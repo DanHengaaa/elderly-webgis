@@ -11,10 +11,10 @@
 
       <nav class="desktop-nav">
         <button class="nav-item active">地图找院</button>
-        <button class="nav-item">智能评估</button>
-        <button class="nav-item">我的推荐</button>
-        <button class="nav-item">AI 伴诊</button>
-        <button class="nav-item">社区</button>
+        <button class="nav-item" @click="router.push('/assessment')">智能评估</button>
+        <button class="nav-item" @click="router.push('/recommendations')">我的推荐</button>
+        <button class="nav-item" @click="router.push('/ai-assistant')">AI 伴诊</button>
+        <button class="nav-item" @click="router.push('/community')">社区</button>
       </nav>
 
       <div class="header-right">
@@ -71,6 +71,80 @@
     </section>
 
     <main id="map" class="map-container"></main>
+
+<!-- 探视可达性分析控件 -->
+<div class="visit-accessibility-widget" @click.stop>
+  <div class="visit-widget-header">
+    <div>
+      <h3>探视可达性分析</h3>
+      <p>设置探视起点，生成 15 / 30 / 60 分钟等时圈</p>
+    </div>
+
+    <button
+      class="visit-pick-btn"
+      :class="{ active: visitPickMode }"
+      @click="toggleVisitPickMode"
+    >
+      {{ visitPickMode ? '正在选点' : '地图选点' }}
+    </button>
+  </div>
+
+  <div class="visit-search-row">
+    <input
+      v-model="visitSearchKeyword"
+      placeholder="输入起点，例如：河海大学 / 新街口"
+      @keyup.enter="searchVisitStart"
+    />
+
+    <button class="primary-btn" @click="searchVisitStart">
+      搜索
+    </button>
+  </div>
+
+  <div v-if="visitStart" class="visit-start-box">
+    <span>当前起点</span>
+    <strong>{{ visitStart.name }}</strong>
+    <p>{{ visitStart.lon.toFixed(6) }}, {{ visitStart.lat.toFixed(6) }}</p>
+  </div>
+
+  <button
+    class="primary-btn full-btn"
+    :disabled="!visitStart || visitLoading"
+    @click="runVisitAccessibilityAnalysis"
+  >
+    {{ visitLoading ? '正在分析...' : '生成等时圈' }}
+  </button>
+
+  <div v-if="visitErrorMessage" class="visit-error">
+    {{ visitErrorMessage }}
+  </div>
+
+  <div v-if="visitAnalysisResult" class="visit-result-box">
+    <div class="visit-ring-legend">
+      <span><i class="ring-15"></i>15分钟</span>
+      <span><i class="ring-30"></i>30分钟</span>
+      <span><i class="ring-60"></i>60分钟</span>
+    </div>
+
+    <p>
+      可达机构：
+      <strong>{{ visitAnalysisResult.reachableInstitutions.length }}</strong>
+      家
+    </p>
+
+    <div class="visit-reachable-list">
+      <article
+        v-for="item in visitAnalysisResult.reachableInstitutions.slice(0, 6)"
+        :key="item.id"
+        @click="focusReachableInstitution(item)"
+      >
+        <strong>{{ item.name }}</strong>
+        <span>{{ item.estimatedMinutes }} 分钟 · {{ item.reachabilityLevelText }}</span>
+      </article>
+    </div>
+  </div>
+</div>
+
 
 <!-- 地图浮动图层控制按钮 -->
 <!-- 地图浮动图层控制按钮：只控制可选 POI 图层 -->
@@ -393,6 +467,7 @@
 </template>
 
 <script setup>
+import GeoJSON from 'ol/format/GeoJSON.js'
 import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Map from 'ol/Map.js'
@@ -405,7 +480,7 @@ import TileWMS from 'ol/source/TileWMS.js'
 import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
-import { fromLonLat } from 'ol/proj.js'
+import { fromLonLat, toLonLat } from 'ol/proj.js'
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style.js'
 import axios from 'axios'
 
@@ -431,6 +506,22 @@ const showLifePoiLayer = ref(false)
 const showParkPoiLayer = ref(false)
 
 const layerDropdownOpen = ref(false)
+
+const visitSearchKeyword = ref('')
+const visitStart = ref(null)
+const visitPickMode = ref(false)
+const visitLoading = ref(false)
+const visitErrorMessage = ref('')
+const visitAnalysisResult = ref(null)
+
+let visitStartLayer = null
+let visitIsochroneLayer = null
+let visitReachableInstitutionLayer = null
+
+const geoJsonFormat = new GeoJSON()
+
+
+
 
 let map = null
 let markerSource = null
@@ -526,8 +617,8 @@ function createTiandituTileLayer(layerName, zIndex, opacity = 1) {
     zIndex,
     source: new XYZ({
       urls: buildTiandituUrls(layerName),
-      crossOrigin: 'anonymous',
-      wrapX: true
+      wrapX: true,
+      transition: 0
     })
   })
 }
@@ -562,6 +653,59 @@ function initMap() {
     zIndex: 30
   })
 
+visitIsochroneLayer = new VectorLayer({
+  source: new VectorSource(),
+  zIndex: 8,
+  style: feature => {
+    const minutes = feature.get('minutes')
+
+    if (minutes === 15) {
+      return new Style({
+        fill: new Fill({ color: 'rgba(58, 158, 92, 0.20)' }),
+        stroke: new Stroke({ color: '#3A9E5C', width: 2 })
+      })
+    }
+
+    if (minutes === 30) {
+      return new Style({
+        fill: new Fill({ color: 'rgba(232, 132, 91, 0.18)' }),
+        stroke: new Stroke({ color: '#E8845B', width: 2 })
+      })
+    }
+
+    return new Style({
+      fill: new Fill({ color: 'rgba(217, 83, 79, 0.14)' }),
+      stroke: new Stroke({ color: '#D9534F', width: 2 })
+    })
+  }
+})
+
+visitReachableInstitutionLayer = new VectorLayer({
+  source: new VectorSource(),
+  zIndex: 35,
+  style: new Style({
+    image: new CircleStyle({
+      radius: 10,
+      fill: new Fill({ color: '#7B61FF' }),
+      stroke: new Stroke({ color: '#FFFFFF', width: 3 })
+    })
+  })
+})
+
+visitStartLayer = new VectorLayer({
+  source: new VectorSource(),
+  zIndex: 45,
+  style: new Style({
+    image: new CircleStyle({
+      radius: 12,
+      fill: new Fill({ color: '#111827' }),
+      stroke: new Stroke({ color: '#FFFFFF', width: 3 })
+    })
+  })
+})
+
+
+
   tiandituVectorLayer = createTiandituTileLayer('vec', 1, 1)
   tiandituLabelLayer = createTiandituTileLayer('cva', 2, 1)
 
@@ -587,15 +731,18 @@ function initMap() {
 
   map = new Map({
     target: 'map',
-    layers: [
-      tiandituVectorLayer,
-      tiandituLabelLayer,
-      institutionWmsLayer,
-      medicalPoiLayer,
-      lifePoiLayer,
-      parkPoiLayer,
-      markerLayer
-    ],
+   layers: [
+  tiandituVectorLayer,
+  tiandituLabelLayer,
+  visitIsochroneLayer,
+  institutionWmsLayer,
+  medicalPoiLayer,
+  lifePoiLayer,
+  parkPoiLayer,
+  markerLayer,
+  visitReachableInstitutionLayer,
+  visitStartLayer
+],
     view: new View({
       center: fromLonLat([118.7969, 32.0603]),
       zoom: 10,
@@ -614,6 +761,21 @@ function initMap() {
   map.addOverlay(poiPopupOverlay)
 
 map.on('singleclick', async event => {
+  if (visitPickMode.value) {
+  const [lon, lat] = toLonLat(event.coordinate)
+
+  setVisitStart({
+    name: '地图选点起点',
+    lon,
+    lat
+  })
+
+  visitPickMode.value = false
+  await runVisitAccessibilityAnalysis()
+  return
+}
+  
+  
   layerDropdownOpen.value = false
   closePoiPopup()
 
@@ -1038,4 +1200,203 @@ onMounted(async () => {
   await loadInstitutions()
   updateMapSize()
 })
+
+function toggleVisitPickMode() {
+  visitPickMode.value = !visitPickMode.value
+
+  if (visitPickMode.value) {
+    visitErrorMessage.value = '请在地图上点击一个位置作为探视起点。'
+  } else {
+    visitErrorMessage.value = ''
+  }
+}
+
+async function searchVisitStart() {
+  if (!visitSearchKeyword.value.trim()) {
+    visitErrorMessage.value = '请输入起点关键词。'
+    return
+  }
+
+  visitLoading.value = true
+  visitErrorMessage.value = ''
+
+  try {
+    const response = await axios.get('/api/geo/geocode', {
+      params: {
+        keyword: visitSearchKeyword.value.trim()
+      }
+    })
+
+    setVisitStart({
+      name: response.data.formattedAddress || visitSearchKeyword.value.trim(),
+      lon: Number(response.data.lon),
+      lat: Number(response.data.lat)
+    })
+
+    await runVisitAccessibilityAnalysis()
+  } catch (error) {
+    console.error('起点搜索失败：', error)
+    visitErrorMessage.value = '起点搜索失败，请检查天地图 key 或换一个更明确的南京地址。'
+  } finally {
+    visitLoading.value = false
+  }
+}
+
+function setVisitStart(start) {
+  if (!start || !Number.isFinite(start.lon) || !Number.isFinite(start.lat)) {
+    visitErrorMessage.value = '起点坐标无效。'
+    return
+  }
+
+  visitStart.value = start
+  renderVisitStartMarker()
+
+  if (map) {
+    map.getView().animate({
+      center: fromLonLat([start.lon, start.lat]),
+      zoom: 13,
+      duration: 400
+    })
+  }
+}
+
+function renderVisitStartMarker() {
+  if (!visitStartLayer || !visitStart.value) {
+    return
+  }
+
+  const source = visitStartLayer.getSource()
+  source.clear()
+
+  source.addFeature(
+    new Feature({
+      geometry: new Point(fromLonLat([visitStart.value.lon, visitStart.value.lat])),
+      name: visitStart.value.name
+    })
+  )
+}
+
+async function runVisitAccessibilityAnalysis() {
+  if (!visitStart.value) {
+    visitErrorMessage.value = '请先设置探视起点。'
+    return
+  }
+
+  visitLoading.value = true
+  visitErrorMessage.value = ''
+
+  try {
+    const response = await axios.get('/api/analysis/visit-accessibility', {
+      params: {
+        lon: visitStart.value.lon,
+        lat: visitStart.value.lat,
+        startName: visitStart.value.name,
+        mode: 'driving'
+      }
+    })
+
+    visitAnalysisResult.value = response.data
+    renderVisitAccessibilityResult(response.data)
+  } catch (error) {
+    console.error('探视可达性分析失败：', error)
+    visitErrorMessage.value = '探视可达性分析失败，请检查 pgRouting、road_network_vertices_pgr 或路网 cost_s 字段。'
+  } finally {
+    visitLoading.value = false
+  }
+}
+
+function renderVisitAccessibilityResult(result) {
+  if (!result) {
+    return
+  }
+
+  renderVisitIsochroneRings(result.rings || [])
+  renderReachableInstitutions(result.reachableInstitutions || [])
+}
+
+function renderVisitIsochroneRings(rings) {
+  if (!visitIsochroneLayer) {
+    return
+  }
+
+  const source = visitIsochroneLayer.getSource()
+  source.clear()
+
+  rings.forEach(ring => {
+    if (!ring.polygonGeoJson) {
+      return
+    }
+
+    try {
+      const geometry = geoJsonFormat.readGeometry(
+        JSON.parse(ring.polygonGeoJson),
+        {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        }
+      )
+
+      const feature = new Feature({
+        geometry,
+        minutes: ring.minutes,
+        level: ring.level,
+        levelText: ring.levelText
+      })
+
+      source.addFeature(feature)
+    } catch (error) {
+      console.error('解析等时圈 GeoJSON 失败：', error)
+    }
+  })
+}
+
+function renderReachableInstitutions(list) {
+  if (!visitReachableInstitutionLayer) {
+    return
+  }
+
+  const source = visitReachableInstitutionLayer.getSource()
+  source.clear()
+
+  list.forEach(item => {
+    const lon = Number(item.lon)
+    const lat = Number(item.lat)
+
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) {
+      return
+    }
+
+    const feature = new Feature({
+      geometry: new Point(fromLonLat([lon, lat])),
+      institution: item,
+      visitReachable: true
+    })
+
+    source.addFeature(feature)
+  })
+}
+
+function focusReachableInstitution(item) {
+  if (!item || !map) {
+    return
+  }
+
+  const lon = Number(item.lon)
+  const lat = Number(item.lat)
+
+  if (!Number.isFinite(lon) || !Number.isFinite(lat)) {
+    return
+  }
+
+  map.getView().animate({
+    center: fromLonLat([lon, lat]),
+    zoom: 15,
+    duration: 400
+  })
+}
+
+
+
+
+
 </script>

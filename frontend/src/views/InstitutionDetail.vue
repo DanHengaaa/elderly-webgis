@@ -370,19 +370,29 @@ async function loadDetail() {
 
   loading.value = true
   errorMessage.value = ''
+  destroyMiniMap()
 
   try {
     const response = await axios.get(`/api/institutions/${id}`)
     detail.value = response.data
-
-    await nextTick()
-    initOrUpdateMiniMap()
   } catch (error) {
     console.error('加载机构详情失败：', error)
     errorMessage.value = '加载机构详情失败，请检查后端接口或数据库字段。'
   } finally {
     loading.value = false
   }
+
+  await nextTick()
+
+  requestAnimationFrame(() => {
+    initOrUpdateMiniMap()
+
+    setTimeout(() => {
+      if (detailMiniMap) {
+        detailMiniMap.updateSize()
+      }
+    }, 200)
+  })
 }
 
 function buildTiandituUrls(layerName) {
@@ -399,15 +409,21 @@ function createTiandituTileLayer(layerName, zIndex, opacity = 1) {
     zIndex,
     source: new XYZ({
       urls: buildTiandituUrls(layerName),
-      crossOrigin: 'anonymous',
-      wrapX: true
+      wrapX: true,
+      transition: 0
     })
   })
 }
 
 function initOrUpdateMiniMap() {
-  if (!hasValidCoordinate.value || !detailMiniMapRef.value) {
+  if (!hasValidCoordinate.value) {
+    console.warn('机构缺少有效经纬度，无法初始化详情页小地图')
     destroyMiniMap()
+    return
+  }
+
+  if (!detailMiniMapRef.value) {
+    console.warn('详情页小地图容器尚未渲染，暂不初始化')
     return
   }
 
@@ -466,13 +482,14 @@ function initOrUpdateMiniMap() {
     controls: []
   })
 
+  detailMiniMap.updateSize()
+
   setTimeout(() => {
     if (detailMiniMap) {
       detailMiniMap.updateSize()
     }
-  }, 100)
+  }, 300)
 }
-
 function createInstitutionMarker(coordinate) {
   return new Feature({
     geometry: new Point(coordinate)

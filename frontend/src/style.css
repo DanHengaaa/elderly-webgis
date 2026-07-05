@@ -1840,3 +1840,1182 @@ body.elder-mode .search-toolbar {
     border-radius: 16px;
   }
 }
+
+/* 智能评估页：医疗生命线分析 */
+.smart-assessment-page {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #f5f7f9;
+  color: #1f2933;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 200;
+  -webkit-overflow-scrolling: touch;
+}
+
+.assessment-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 260;
+  min-height: 76px;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #d9e0e8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  backdrop-filter: blur(8px);
+}
+
+.assessment-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.assessment-title strong {
+  color: #2e7d6b;
+  font-size: 22px;
+}
+
+.assessment-title span {
+  margin-top: 4px;
+  color: #52606d;
+  font-size: 13px;
+}
+
+.assessment-layout {
+  width: min(1440px, calc(100% - 48px));
+  margin: 24px auto 80px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
+
+.assessment-left,
+.assessment-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.assessment-card,
+.assessment-map-card {
+  border-radius: 22px;
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.assessment-form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 18px 0;
+  color: #52606d;
+  font-size: 15px;
+}
+
+.assessment-form-item select {
+  height: 48px;
+  border: 1px solid #d9e0e8;
+  border-radius: 12px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #1f2933;
+  font-size: 15px;
+  outline: none;
+}
+
+.assessment-form-item select:focus {
+  border-color: #2e7d6b;
+  box-shadow: 0 0 0 3px rgba(46, 125, 107, 0.12);
+}
+
+.assessment-note {
+  margin-top: 18px;
+  border-radius: 16px;
+  background: #e3f1ed;
+  padding: 16px;
+}
+
+.assessment-note strong {
+  color: #2e7d6b;
+}
+
+.assessment-note p {
+  margin: 8px 0 0;
+  color: #52606d;
+  line-height: 1.7;
+}
+
+.indicator-explain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.indicator-explain-list div {
+  border-radius: 16px;
+  background: #f5f7f9;
+  padding: 14px;
+}
+
+.indicator-explain-list strong {
+  color: #1f2933;
+}
+
+.indicator-explain-list p {
+  margin: 6px 0 0;
+  color: #52606d;
+  line-height: 1.6;
+}
+
+.assessment-map-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.assessment-map-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid #eef2f5;
+}
+
+.assessment-map-header h2 {
+  margin: 0;
+  color: #2e7d6b;
+  font-size: 22px;
+}
+
+.assessment-map-header p {
+  margin: 6px 0 0;
+  color: #52606d;
+  font-size: 14px;
+}
+
+.assessment-map {
+  width: 100%;
+  height: 430px;
+  background: #eef3f1;
+}
+
+.assessment-map .ol-viewport {
+  border-radius: 0 0 22px 22px;
+}
+
+.assessment-state {
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 20px;
+  color: #52606d;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.assessment-state.error {
+  color: #d9534f;
+}
+
+.assessment-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.summary-card {
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.summary-card span {
+  display: block;
+  color: #52606d;
+  font-size: 14px;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 10px;
+  color: #2e7d6b;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.summary-card small {
+  display: block;
+  margin-top: 6px;
+  color: #9aa5b1;
+  line-height: 1.5;
+}
+
+.summary-card.high strong {
+  color: #3a9e5c;
+}
+
+.summary-card.medium strong {
+  color: #e0a030;
+}
+
+.summary-card.low strong {
+  color: #d9534f;
+}
+
+.radius-table {
+  border: 1px solid #eef2f5;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.radius-table-header,
+.radius-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.radius-table-header {
+  background: #e3f1ed;
+  color: #2e7d6b;
+  font-weight: 800;
+}
+
+.radius-table-header span,
+.radius-table-row span,
+.radius-table-row strong {
+  padding: 14px;
+  border-bottom: 1px solid #eef2f5;
+}
+
+.radius-table-row:last-child span,
+.radius-table-row:last-child strong {
+  border-bottom: none;
+}
+
+.radius-table-row strong {
+  color: #1f2933;
+}
+
+.medical-poi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.medical-poi-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #eef2f5;
+  border-radius: 18px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.medical-poi-card:hover {
+  border-color: #3a7bd5;
+  box-shadow: 0 4px 12px rgba(58, 123, 213, 0.14);
+  transform: translateY(-1px);
+}
+
+.medical-poi-card h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #1f2933;
+}
+
+.medical-poi-card p {
+  margin: 8px 0 0;
+  color: #52606d;
+  line-height: 1.6;
+}
+
+.medical-poi-meta {
+  flex-shrink: 0;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.medical-poi-meta strong {
+  color: #3a7bd5;
+  font-size: 18px;
+}
+
+.medical-poi-meta small {
+  color: #52606d;
+  text-align: right;
+}
+
+.key-medical-badge {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(217, 83, 79, 0.12);
+  color: #d9534f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* 智能评估移动端适配 */
+@media (max-width: 1100px) {
+  .assessment-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .assessment-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .assessment-topbar {
+    padding: 10px;
+    min-height: 64px;
+  }
+
+  .assessment-title strong {
+    font-size: 17px;
+  }
+
+  .assessment-title span {
+    display: none;
+  }
+
+  .assessment-topbar .primary-btn {
+    display: none;
+  }
+
+  .assessment-layout {
+    width: calc(100% - 20px);
+    margin: 12px auto 40px;
+    gap: 16px;
+  }
+
+  .assessment-card,
+  .assessment-map-card {
+    border-radius: 18px;
+  }
+
+  .assessment-map {
+    height: 320px;
+  }
+
+  .assessment-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .radius-table-header,
+  .radius-table-row {
+    grid-template-columns: 0.8fr 1fr 1fr;
+    font-size: 14px;
+  }
+
+  .medical-poi-card {
+    flex-direction: column;
+  }
+
+  .medical-poi-meta {
+    min-width: 0;
+    align-items: flex-start;
+  }
+}
+
+/* 智能评估页：地图弹窗与图例增强 */
+.selected-institution-box {
+  margin: 14px 0 18px;
+  border-radius: 16px;
+  background: #e3f1ed;
+  padding: 14px;
+  border: 1px solid rgba(46, 125, 107, 0.18);
+}
+
+.selected-institution-box span {
+  display: block;
+  color: #52606d;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.selected-institution-box strong {
+  display: block;
+  color: #2e7d6b;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.selected-institution-box p {
+  margin: 6px 0 0;
+  color: #52606d;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.assessment-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.assessment-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  max-width: 420px;
+}
+
+.assessment-map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #52606d;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.assessment-map-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.legend-institution {
+  background: #2e7d6b;
+}
+
+.legend-institution-selected {
+  background: #e8845b;
+}
+
+.legend-medical {
+  background: #3a7bd5;
+}
+
+.legend-key-medical {
+  background: #d9534f;
+}
+
+.assessment-map-popup {
+  min-width: 260px;
+  max-width: 340px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 16px;
+  border: 1px solid #d9e0e8;
+  position: relative;
+}
+
+.assessment-map-popup::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-right: 1px solid #d9e0e8;
+  border-bottom: 1px solid #d9e0e8;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.assessment-popup-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: #f5f7f9;
+  color: #52606d;
+  font-size: 20px;
+  line-height: 1;
+  z-index: 2;
+}
+
+.assessment-popup-title {
+  padding-right: 34px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #1f2933;
+  line-height: 1.4;
+}
+
+.assessment-popup-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.assessment-popup-badge.institution {
+  background: rgba(46, 125, 107, 0.12);
+  color: #2e7d6b;
+}
+
+.assessment-popup-badge.medical {
+  background: rgba(58, 123, 213, 0.12);
+  color: #3a7bd5;
+}
+
+.assessment-popup-badge.key-medical {
+  background: rgba(217, 83, 79, 0.12);
+  color: #d9534f;
+}
+
+.assessment-popup-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.assessment-popup-row span {
+  color: #52606d;
+}
+
+.assessment-popup-row strong {
+  color: #1f2933;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .assessment-map-header {
+    flex-direction: column;
+  }
+
+  .assessment-map-legend {
+    justify-content: flex-start;
+    max-width: none;
+  }
+
+  .assessment-map-popup {
+    min-width: 230px;
+    max-width: 280px;
+    padding: 14px;
+  }
+
+  .assessment-popup-title {
+    font-size: 16px;
+  }
+
+  .assessment-popup-row {
+    font-size: 13px;
+  }
+}
+
+/* 智能评估页：地图内右侧医疗设施抽屉 */
+.assessment-map-body {
+  position: relative;
+  width: 100%;
+  height: 430px;
+  overflow: hidden;
+}
+
+.assessment-map-body .assessment-map {
+  width: 100%;
+  height: 100%;
+}
+
+.medical-drawer-toggle {
+  position: absolute;
+  z-index: 45;
+  top: 16px;
+  right: 16px;
+  min-width: 142px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #2e7d6b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.medical-drawer-toggle span {
+  color: #52606d;
+}
+
+.medical-drawer-toggle strong {
+  color: #2e7d6b;
+}
+
+.map-medical-drawer {
+  position: absolute;
+  z-index: 44;
+  top: 70px;
+  right: 16px;
+  bottom: 16px;
+  width: 360px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d9e0e8;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transform: translateX(calc(100% + 32px));
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.map-medical-drawer.open {
+  transform: translateX(0);
+}
+
+.map-medical-drawer-header {
+  flex-shrink: 0;
+  padding: 16px;
+  border-bottom: 1px solid #eef2f5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.map-medical-drawer-header h3 {
+  margin: 0;
+  color: #2e7d6b;
+  font-size: 20px;
+}
+
+.map-medical-drawer-header p {
+  margin: 5px 0 0;
+  color: #52606d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.map-medical-drawer-header button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: #f5f7f9;
+  color: #52606d;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.map-medical-empty {
+  margin: 16px;
+  border-radius: 14px;
+  background: #f5f7f9;
+  color: #52606d;
+  padding: 18px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.map-drawer-medical-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.map-drawer-medical-list .medical-poi-card {
+  background: #ffffff;
+}
+
+.map-drawer-medical-list .medical-poi-card.active {
+  border-color: #7b61ff;
+  box-shadow: 0 4px 14px rgba(123, 97, 255, 0.18);
+}
+
+.map-drawer-medical-list .medical-poi-card.active .medical-poi-meta strong {
+  color: #7b61ff;
+}
+
+/* 覆盖原 assessment-map-card 的地图高度，让地图 body 接管高度 */
+.assessment-map-card .assessment-map {
+  height: 100%;
+}
+
+/* 移动端：医疗列表抽屉改为底部抽屉 */
+@media (max-width: 768px) {
+  .assessment-map-body {
+    height: 320px;
+  }
+
+  .medical-drawer-toggle {
+    top: 12px;
+    right: 12px;
+    min-width: 126px;
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .map-medical-drawer {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 10px;
+    width: auto;
+    height: 72%;
+    border-radius: 18px;
+    transform: translateY(calc(100% + 24px));
+  }
+
+  .map-medical-drawer.open {
+    transform: translateY(0);
+  }
+
+  .map-medical-drawer-header h3 {
+    font-size: 18px;
+  }
+}
+
+/* 智能评估页：周边环境图层叠加 */
+.analysis-action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.assessment-layer-control {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.assessment-layer-control label {
+  min-height: 44px;
+  border-radius: 14px;
+  padding: 8px 12px;
+  background: #f5f7f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #1f2933;
+  cursor: pointer;
+}
+
+.assessment-layer-control input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2e7d6b;
+}
+
+.legend-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.medical-dot {
+  background: #3a7bd5;
+}
+
+.life-dot {
+  background: #e8845b;
+}
+
+.park-dot {
+  background: #3a9e5c;
+}
+
+.legend-life {
+  background: #e8845b;
+}
+
+.legend-park {
+  background: #3a9e5c;
+}
+
+.environment-drawer-toggle {
+  position: absolute;
+  z-index: 45;
+  top: 66px;
+  right: 16px;
+  min-width: 142px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #2e7d6b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.environment-drawer-toggle span {
+  color: #52606d;
+}
+
+.environment-drawer-toggle strong {
+  color: #2e7d6b;
+}
+
+.map-environment-drawer {
+  position: absolute;
+  z-index: 44;
+  top: 120px;
+  right: 16px;
+  bottom: 16px;
+  width: 360px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d9e0e8;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  transform: translateX(calc(100% + 32px));
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.map-environment-drawer.open {
+  transform: translateX(0);
+}
+
+.environment-drawer-tabs {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eef2f5;
+}
+
+.environment-drawer-tabs button {
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  background: #f5f7f9;
+  color: #52606d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.environment-drawer-tabs button.active {
+  background: #e3f1ed;
+  color: #2e7d6b;
+}
+
+.environment-poi-card.active {
+  border-color: #7b61ff;
+  box-shadow: 0 4px 14px rgba(123, 97, 255, 0.18);
+}
+
+.environment-badge {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.environment-badge.life {
+  background: rgba(232, 132, 91, 0.14);
+  color: #e8845b;
+}
+
+.environment-badge.park {
+  background: rgba(58, 158, 92, 0.14);
+  color: #3a9e5c;
+}
+
+.assessment-popup-badge.life {
+  background: rgba(232, 132, 91, 0.14);
+  color: #e8845b;
+}
+
+.assessment-popup-badge.park {
+  background: rgba(58, 158, 92, 0.14);
+  color: #3a9e5c;
+}
+
+.environment-radius-table .radius-table-header {
+  background: #f0f7f3;
+  color: #2e7d6b;
+}
+
+@media (max-width: 768px) {
+  .environment-drawer-toggle {
+    top: 62px;
+    right: 12px;
+    min-width: 126px;
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .map-environment-drawer {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 10px;
+    width: auto;
+    height: 72%;
+    border-radius: 18px;
+    transform: translateY(calc(100% + 24px));
+  }
+
+  .map-environment-drawer.open {
+    transform: translateY(0);
+  }
+}
+
+/* 主页：探视可达性分析控件 */
+.visit-accessibility-widget {
+  position: absolute;
+  z-index: 72;
+  left: 324px;
+  top: 184px;
+  width: 360px;
+  max-height: calc(100vh - 230px);
+  overflow-y: auto;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d9e0e8;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  padding: 18px;
+  backdrop-filter: blur(10px);
+}
+
+.visit-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.visit-widget-header h3 {
+  margin: 0;
+  color: #2e7d6b;
+  font-size: 20px;
+}
+
+.visit-widget-header p {
+  margin: 6px 0 0;
+  color: #52606d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.visit-pick-btn {
+  flex-shrink: 0;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 12px;
+  background: #f5f7f9;
+  color: #52606d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.visit-pick-btn.active {
+  background: #e8845b;
+  color: #ffffff;
+}
+
+.visit-search-row {
+  display: grid;
+  grid-template-columns: 1fr 76px;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.visit-search-row input {
+  height: 44px;
+  border: 1px solid #d9e0e8;
+  border-radius: 12px;
+  padding: 0 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.visit-search-row input:focus {
+  border-color: #2e7d6b;
+  box-shadow: 0 0 0 3px rgba(46, 125, 107, 0.12);
+}
+
+.visit-start-box {
+  margin-top: 14px;
+  border-radius: 16px;
+  background: #e3f1ed;
+  padding: 12px;
+}
+
+.visit-start-box span {
+  display: block;
+  color: #52606d;
+  font-size: 13px;
+}
+
+.visit-start-box strong {
+  display: block;
+  margin-top: 4px;
+  color: #2e7d6b;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.visit-start-box p {
+  margin: 5px 0 0;
+  color: #52606d;
+  font-size: 13px;
+}
+
+.visit-accessibility-widget .full-btn {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.visit-error {
+  margin-top: 12px;
+  border-radius: 12px;
+  background: rgba(217, 83, 79, 0.10);
+  color: #d9534f;
+  padding: 10px;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.visit-result-box {
+  margin-top: 14px;
+  border-top: 1px solid #eef2f5;
+  padding-top: 14px;
+}
+
+.visit-ring-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.visit-ring-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #52606d;
+  font-size: 13px;
+}
+
+.visit-ring-legend i {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.ring-15 {
+  background: rgba(58, 158, 92, 0.55);
+}
+
+.ring-30 {
+  background: rgba(232, 132, 91, 0.55);
+}
+
+.ring-60 {
+  background: rgba(217, 83, 79, 0.45);
+}
+
+.visit-result-box p {
+  margin: 12px 0 0;
+  color: #52606d;
+}
+
+.visit-result-box p strong {
+  color: #2e7d6b;
+}
+
+.visit-reachable-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.visit-reachable-list article {
+  border-radius: 12px;
+  background: #f5f7f9;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.visit-reachable-list article:hover {
+  background: #e3f1ed;
+}
+
+.visit-reachable-list strong {
+  display: block;
+  color: #1f2933;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.visit-reachable-list span {
+  display: block;
+  margin-top: 4px;
+  color: #52606d;
+  font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+  .visit-accessibility-widget {
+    left: 24px;
+    top: 250px;
+    width: 330px;
+  }
+}
+
+@media (max-width: 768px) {
+  .visit-accessibility-widget {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 82px;
+    width: auto;
+    max-height: 46vh;
+    border-radius: 18px;
+    padding: 14px;
+    z-index: 88;
+  }
+
+  .visit-widget-header h3 {
+    font-size: 17px;
+  }
+
+  .visit-widget-header p {
+    display: none;
+  }
+
+  .visit-search-row {
+    grid-template-columns: 1fr 68px;
+  }
+}
