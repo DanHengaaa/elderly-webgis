@@ -3,12 +3,17 @@ package com.hhu.elderly.auth.service;
 import com.hhu.elderly.auth.dto.AuthResponse;
 import com.hhu.elderly.auth.dto.AuthUserResponse;
 import com.hhu.elderly.auth.dto.LoginRequest;
+import com.hhu.elderly.auth.dto.PasswordChangeRequest;
 import com.hhu.elderly.auth.dto.RegisterRequest;
+import com.hhu.elderly.auth.dto.UserProfileUpdateRequest;
 import com.hhu.elderly.auth.repository.AuthRepository;
 import com.hhu.elderly.auth.security.AuthUserPrincipal;
 import com.hhu.elderly.auth.security.JwtTokenProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -50,7 +55,7 @@ public class AuthService {
         authRepository.createUser(
                 username,
                 passwordEncoder.encode(password),
-                nickname == null ? username : nickname,
+                nickname == null || nickname.isBlank() ? username : nickname,
                 phone,
                 roleCode
         );
@@ -123,7 +128,105 @@ public class AuthService {
     }
 
     public AuthUserResponse currentUser(AuthUserPrincipal principal) {
+        if (principal == null || principal.getId() == null) {
+            throw new IllegalArgumentException("当前未登录。");
+        }
+
         return authRepository.findUserResponseById(principal.getId());
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(
+            UserProfileUpdateRequest request,
+            AuthUserPrincipal user
+    ) {
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("当前未登录。");
+        }
+
+        String nickname = safeTrim(request.nickname());
+        String phone = safeTrim(request.phone());
+        String email = safeTrim(request.email());
+
+        authRepository.updateProfile(
+                user.getId(),
+                nickname,
+                phone,
+                email
+        );
+
+        AuthUserResponse updatedUser =
+                authRepository.findUserResponseById(user.getId());
+
+        String newAuthorName = hasText(updatedUser.nickname())
+                ? updatedUser.nickname()
+                : updatedUser.username();
+
+        authRepository.syncCommunityAuthorName(
+                updatedUser.id(),
+                newAuthorName
+        );
+
+        AuthUserPrincipal newPrincipal = new AuthUserPrincipal(
+                updatedUser.id(),
+                updatedUser.username(),
+                updatedUser.nickname(),
+                updatedUser.roleCode(),
+                updatedUser.institutionId()
+        );
+
+        String token = jwtTokenProvider.generateToken(newPrincipal);
+
+        return new AuthResponse(
+                token,
+                updatedUser
+        );
+    }
+
+    @Transactional
+    public Map<String, Object> changePassword(
+            PasswordChangeRequest request,
+            AuthUserPrincipal user
+    ) {
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("当前未登录。");
+        }
+
+        String oldPassword = safeTrim(request.oldPassword());
+        String newPassword = safeTrim(request.newPassword());
+
+        if (!hasText(oldPassword)) {
+            throw new IllegalArgumentException("请输入原密码。");
+        }
+
+        if (!hasText(newPassword) || newPassword.length() < 6) {
+            throw new IllegalArgumentException("新密码长度不能少于 6 位。");
+        }
+
+        AuthRepository.UserPasswordRecord record =
+                authRepository.findPasswordRecord(user.getUsername());
+
+        if (record == null) {
+            throw new IllegalArgumentException("当前用户不存在。");
+        }
+
+        if (!record.id().equals(user.getId())) {
+            throw new IllegalArgumentException("登录状态异常，请重新登录。");
+        }
+
+        if (!passwordEncoder.matches(oldPassword, record.passwordHash())) {
+            throw new IllegalArgumentException("原密码不正确。");
+        }
+
+        authRepository.updatePassword(
+                user.getId(),
+                passwordEncoder.encode(newPassword)
+        );
+
+        return Map.of(
+                "success", true,
+                "message", "密码修改成功"
+        );
     }
 
     private String normalizeRoleCode(String roleCode) {
@@ -144,5 +247,9 @@ public class AuthService {
         }
 
         return value.trim();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

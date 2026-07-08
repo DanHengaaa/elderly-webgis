@@ -90,6 +90,43 @@ public class AuthRepository {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    public UserPasswordRecord findPasswordRecordById(Long id) {
+        String sql = """
+                SELECT
+                    id,
+                    username,
+                    password_hash,
+                    nickname,
+                    phone,
+                    email,
+                    role_code,
+                    institution_id,
+                    status
+                FROM sys_users
+                WHERE id = ?
+                """;
+
+        List<UserPasswordRecord> list = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> new UserPasswordRecord(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("password_hash"),
+                        rs.getString("nickname"),
+                        rs.getString("phone"),
+                        rs.getString("email"),
+                        rs.getString("role_code"),
+                        rs.getObject("institution_id") == null
+                                ? null
+                                : ((Number) rs.getObject("institution_id")).longValue(),
+                        rs.getInt("status")
+                ),
+                id
+        );
+
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     public AuthUserResponse findUserResponseById(Long id) {
         String sql = """
                 SELECT
@@ -119,6 +156,44 @@ public class AuthRepository {
                                 : ((Number) rs.getObject("institution_id")).longValue()
                 ),
                 id
+        );
+    }
+
+    public void updateProfile(
+            Long userId,
+            String nickname,
+            String phone,
+            String email
+    ) {
+        jdbcTemplate.update(
+                """
+                UPDATE sys_users
+                SET nickname = ?,
+                    phone = ?,
+                    email = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                nickname,
+                phone,
+                email,
+                userId
+        );
+    }
+
+    public void updatePassword(
+            Long userId,
+            String passwordHash
+    ) {
+        jdbcTemplate.update(
+                """
+                UPDATE sys_users
+                SET password_hash = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                passwordHash,
+                userId
         );
     }
 
@@ -194,6 +269,46 @@ public class AuthRepository {
             String roleCode,
             Long institutionId,
             Integer status
-    ) {
+    ){}
+    
+    public void syncCommunityAuthorName(
+        Long userId,
+        String authorName
+) {
+    jdbcTemplate.update(
+            """
+            UPDATE community_posts
+            SET author_name = ?
+            WHERE author_id = ?
+            """,
+            authorName,
+            userId
+    );
+
+    jdbcTemplate.update(
+            """
+            UPDATE community_comments
+            SET author_name = ?
+            WHERE author_id = ?
+            """,
+            authorName,
+            userId
+    );
+}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+     {
     }
 }

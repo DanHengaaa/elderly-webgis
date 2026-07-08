@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
+import UserProfilePage from '../views/UserProfilePage.vue'
 import MapHome from '../views/MapHome.vue'
 import InstitutionDetail from '../views/InstitutionDetail.vue'
 import SmartAssessment from '../views/SmartAssessment.vue'
@@ -21,6 +21,19 @@ import InstitutionApplication from '../views/InstitutionApplication.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+{
+  path: '/profile',
+  name: 'UserProfilePage',
+  component: UserProfilePage,
+  meta: {
+    requiresAuth: true
+  }
+},
+
+
+
+
+
     {
       path: '/',
       redirect: '/map'

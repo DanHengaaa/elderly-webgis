@@ -42,9 +42,9 @@
       机构工作台
     </button>
 
-    <button v-if="currentUser.roleCode === 'CUSTOMER'" @click="goCustomerCenter">
-      个人中心
-    </button>
+    <button @click="goProfile">
+  个人中心
+</button>
 
     <button @click="logout">
       退出登录
@@ -629,9 +629,9 @@ function goInstitutionConsole() {
   router.push('/institution-console')
 }
 
-function goCustomerCenter() {
+function goProfile() {
   showUserMenu.value = false
-  router.push('/map')
+  router.push('/profile')
 }
 
 function logout() {
