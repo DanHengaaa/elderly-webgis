@@ -363,7 +363,7 @@ function goDetail(id) {
 }
 
 function goMap(item) {
-  if (!item || !item.lon || !item.lat) {
+  if (!item || !item.id) {
     router.push('/map')
     return
   }
@@ -372,8 +372,9 @@ function goMap(item) {
     path: '/map',
     query: {
       institutionId: item.id,
-      lon: item.lon,
-      lat: item.lat
+      focusInstitutionId: item.id,
+      lon: item.lon ?? '',
+      lat: item.lat ?? ''
     }
   })
 }

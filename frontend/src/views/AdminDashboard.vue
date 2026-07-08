@@ -2,7 +2,7 @@
   <div class="simple-page">
     <section class="card">
       <h1>管理员后台</h1>
-      <p>这里后续用于机构入驻审批、社区内容审核、数据治理与运营看板。</p>
+      <p>用于机构入驻审批、社区内容审核、数据治理与运营管理。</p>
 
       <div class="actions">
         <button @click="goCommunityReview">社区内容审核</button>
@@ -75,5 +75,9 @@ button {
   color: #fff;
   font-weight: 900;
   cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(0.96);
 }
 </style>

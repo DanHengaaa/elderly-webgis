@@ -3,8 +3,8 @@ package com.hhu.elderly.institution.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record InstitutionApplicationRequest(
-        String institutionName,
+public record InstitutionProfileUpdateRequest(
+        String name,
         String address,
         String addressName,
         String province,
@@ -27,14 +27,9 @@ public record InstitutionApplicationRequest(
         String images,
         Boolean hasPanorama,
         String intro,
-        String description,
 
         List<ServiceItem> services,
-        List<FacilityItem> facilities,
-
-        String licenseUrl,
-        String recordCertificateUrl,
-        String otherMaterialUrl
+        List<FacilityItem> facilities
 ) {
     public record ServiceItem(
             String serviceType,

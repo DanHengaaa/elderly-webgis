@@ -7,10 +7,6 @@
         <strong>机构详情</strong>
         <span>养老机构完整信息画像</span>
       </div>
-
-      <button class="primary-btn" @click="askAi">
-        问 AI 伴诊
-      </button>
     </header>
 
     <main v-if="loading" class="detail-loading">
@@ -27,7 +23,7 @@
         <div class="detail-cover">
           <img
             v-if="detail.coverImageUrl"
-            :src="detail.coverImageUrl"
+            :src="normalizeFileUrl(detail.coverImageUrl)"
             alt="机构封面图"
           />
           <div v-else class="detail-cover-placeholder">
@@ -78,12 +74,6 @@
               <strong>{{ detail.district || '未知' }}</strong>
               <small>{{ detail.city || '' }}</small>
             </div>
-          </div>
-
-          <div class="detail-actions">
-            <button class="primary-btn">预约 / 联系</button>
-            <button class="secondary-btn">加入对比</button>
-            <button class="secondary-btn">收藏机构</button>
           </div>
         </div>
       </section>
@@ -177,38 +167,58 @@
             </p>
           </section>
 
-          <section class="detail-section">
-            <div class="section-title">
-              <h2>用户评价</h2>
-              <p>来自用户对机构服务、医疗响应、硬件和餐饮的反馈</p>
+          <section class="detail-section community-section">
+            <div class="section-title-row">
+              <div>
+                <h2>社区口碑与探院笔记</h2>
+                <p>来自用户真实探院记录、照护经验和社区互动内容</p>
+              </div>
+
+              <button @click="goCommunityByInstitution">
+                查看更多
+              </button>
             </div>
 
-            <div v-if="detail.reviews && detail.reviews.length > 0" class="review-list">
+            <div v-if="communityLoading" class="community-summary-card">
+              AI 正在生成社区口碑摘要...
+            </div>
+
+            <div v-else-if="communitySummary" class="community-summary-card">
+              <div class="summary-head">
+                <strong>AI 社区口碑摘要</strong>
+                <span>{{ communitySummary.generatedBy }} 生成</span>
+              </div>
+
+              <p>{{ communitySummary.summary }}</p>
+
+              <div class="summary-meta">
+                <span>社区笔记 {{ communitySummary.postCount }} 篇</span>
+                <span v-if="communitySummary.avgRating">平均评分 {{ communitySummary.avgRating }}</span>
+              </div>
+            </div>
+
+            <div v-if="communityPosts.length" class="community-post-list">
               <article
-                v-for="review in detail.reviews"
-                :key="review.id"
-                class="review-card"
+                v-for="post in communityPosts"
+                :key="post.id"
+                class="community-post-mini"
+                @click="goCommunityPost(post.id)"
               >
-                <div class="review-header">
-                  <strong>用户 {{ review.userId || '匿名' }}</strong>
-                  <span>{{ review.createdAt || '暂无时间' }}</span>
+                <div>
+                  <span>{{ post.postTypeText }}</span>
+                  <h3>{{ post.title }}</h3>
+                  <p>{{ post.contentSummary }}</p>
                 </div>
 
-                <div class="review-score-row">
-                  <span>综合 {{ formatScore(review.ratingAvg) }}</span>
-                  <span>医疗 {{ formatScore(review.ratingMedical) }}</span>
-                  <span>硬件 {{ formatScore(review.ratingHardware) }}</span>
-                  <span>餐饮 {{ formatScore(review.ratingFood) }}</span>
-                  <span>护理 {{ formatScore(review.ratingService) }}</span>
-                </div>
-
-                <p>{{ review.content || '用户未填写文字评价。' }}</p>
+                <strong v-if="post.overallRating">
+                  {{ Number(post.overallRating).toFixed(1) }}
+                </strong>
               </article>
             </div>
 
-            <p v-else class="empty-detail-text">
-              暂无用户评价。
-            </p>
+            <div v-else class="community-empty">
+              暂无社区笔记，欢迎发布第一篇探院记录。
+            </div>
           </section>
         </div>
 
@@ -242,7 +252,7 @@
               <img
                 v-for="(image, index) in imageList"
                 :key="index"
-                :src="image"
+                :src="normalizeFileUrl(image)"
                 alt="机构图片"
               />
             </div>
@@ -252,59 +262,7 @@
             </p>
           </section>
 
-          <section class="detail-section community-section">
-  <div class="section-title-row">
-    <div>
-      <h2>社区口碑与探院笔记</h2>
-      <p>来自用户真实探院记录、照护经验和社区互动内容</p>
-    </div>
 
-    <button @click="goCommunityByInstitution">
-      查看更多
-    </button>
-  </div>
-
-  <div v-if="communityLoading" class="community-summary-card">
-    AI 正在生成社区口碑摘要...
-  </div>
-
-  <div v-else-if="communitySummary" class="community-summary-card">
-    <div class="summary-head">
-      <strong>AI 社区口碑摘要</strong>
-      <span>{{ communitySummary.generatedBy }} 生成</span>
-    </div>
-
-    <p>{{ communitySummary.summary }}</p>
-
-    <div class="summary-meta">
-      <span>社区笔记 {{ communitySummary.postCount }} 篇</span>
-      <span v-if="communitySummary.avgRating">平均评分 {{ communitySummary.avgRating }}</span>
-    </div>
-  </div>
-
-  <div v-if="communityPosts.length" class="community-post-list">
-    <article
-      v-for="post in communityPosts"
-      :key="post.id"
-      class="community-post-mini"
-      @click="goCommunityPost(post.id)"
-    >
-      <div>
-        <span>{{ post.postTypeText }}</span>
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.contentSummary }}</p>
-      </div>
-
-      <strong v-if="post.overallRating">
-        {{ Number(post.overallRating).toFixed(1) }}
-      </strong>
-    </article>
-  </div>
-
-  <div v-else class="community-empty">
-    暂无社区笔记，欢迎发布第一篇探院记录。
-  </div>
-</section>
 
 
         </aside>
@@ -584,12 +542,21 @@ function parseImages(rawImages) {
   }
 }
 
-function goBack() {
-  router.push('/map')
+function normalizeFileUrl(url) {
+  if (!url) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+
+  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+  return `${base}${url.startsWith('/') ? url : `/${url}`}`
 }
 
-function askAi() {
-  alert(`AI 伴诊功能后续接入：${detail.value?.name || ''}`)
+function goBack() {
+  router.push('/map')
 }
 
 function formatFee(value) {

@@ -24,7 +24,6 @@
     </main>
 
     <main v-else-if="post" class="detail-layout">
-      <!-- 左侧：帖子正文 + 评论区 -->
       <section class="content-card">
         <div class="post-meta-row">
           <span class="type-pill">{{ post.postTypeText || '社区笔记' }}</span>
@@ -35,9 +34,7 @@
         <h1>{{ post.title }}</h1>
 
         <div class="author-row">
-          <div class="avatar">
-            {{ getAvatarText(post.authorName) }}
-          </div>
+          <div class="avatar">{{ getAvatarText(post.authorName) }}</div>
           <div>
             <strong>{{ post.authorName || '匿名用户' }}</strong>
             <p>{{ formatTime(post.createdAt) }} · 浏览 {{ post.viewCount || 0 }}</p>
@@ -100,11 +97,10 @@
             class="danger-btn"
             @click="deletePost"
           >
-            删除帖子
+            删除
           </button>
         </div>
 
-        <!-- 评论区：放在左侧正文下方 -->
         <section class="comment-card">
           <div class="comment-title-row">
             <h2>评论 {{ comments.length }}</h2>
@@ -135,9 +131,7 @@
             <article v-for="comment in comments" :key="comment.id" class="comment-item">
               <div class="comment-head">
                 <div class="comment-user">
-                  <div class="comment-avatar">
-                    {{ getAvatarText(comment.authorName) }}
-                  </div>
+                  <div class="comment-avatar">{{ getAvatarText(comment.authorName) }}</div>
                   <div>
                     <strong>{{ comment.authorName || '匿名用户' }}</strong>
                     <span>{{ formatTime(comment.createdAt) }}</span>
@@ -159,7 +153,6 @@
         </section>
       </section>
 
-      <!-- 右侧：只保留机构信息和评分信息，不放评论 -->
       <aside class="side-card">
         <section v-if="post.institutionId" class="institution-card">
           <h2>关联机构</h2>
@@ -180,30 +173,12 @@
           </div>
 
           <div class="rating-list">
-            <div>
-              <span>环境</span>
-              <b>{{ formatRating(post.environmentRating) }}</b>
-            </div>
-            <div>
-              <span>护理</span>
-              <b>{{ formatRating(post.careRating) }}</b>
-            </div>
-            <div>
-              <span>医疗</span>
-              <b>{{ formatRating(post.medicalRating) }}</b>
-            </div>
-            <div>
-              <span>生活</span>
-              <b>{{ formatRating(post.lifeRating) }}</b>
-            </div>
-            <div>
-              <span>探视</span>
-              <b>{{ formatRating(post.visitRating) }}</b>
-            </div>
-            <div>
-              <span>价格透明</span>
-              <b>{{ formatRating(post.priceTransparencyRating) }}</b>
-            </div>
+            <div><span>环境</span><b>{{ formatRating(post.environmentRating) }}</b></div>
+            <div><span>护理</span><b>{{ formatRating(post.careRating) }}</b></div>
+            <div><span>医疗</span><b>{{ formatRating(post.medicalRating) }}</b></div>
+            <div><span>生活</span><b>{{ formatRating(post.lifeRating) }}</b></div>
+            <div><span>探视</span><b>{{ formatRating(post.visitRating) }}</b></div>
+            <div><span>价格透明</span><b>{{ formatRating(post.priceTransparencyRating) }}</b></div>
           </div>
         </section>
 
@@ -238,11 +213,7 @@ const currentUser = computed(() => getCurrentUser())
 const loggedIn = computed(() => isLoggedIn())
 
 const isPostOwner = computed(() => {
-  if (!post.value || !currentUser.value) {
-    return false
-  }
-
-  if (!post.value.authorId) {
+  if (!post.value || !currentUser.value || !post.value.authorId) {
     return false
   }
 
@@ -295,9 +266,7 @@ async function fetchComments() {
 }
 
 async function likePost() {
-  if (!requireLogin()) {
-    return
-  }
+  if (!requireLogin()) return
 
   try {
     const response = await axios.post(`/api/community/posts/${route.params.id}/like`)
@@ -313,9 +282,7 @@ async function likePost() {
 }
 
 async function collectPost() {
-  if (!requireLogin()) {
-    return
-  }
+  if (!requireLogin()) return
 
   try {
     const response = await axios.post(`/api/community/posts/${route.params.id}/collect`)
@@ -331,9 +298,7 @@ async function collectPost() {
 }
 
 async function submitComment() {
-  if (!requireLogin()) {
-    return
-  }
+  if (!requireLogin()) return
 
   const content = commentText.value.trim()
 
@@ -358,9 +323,7 @@ async function submitComment() {
 }
 
 async function deleteComment(comment) {
-  if (!requireLogin()) {
-    return
-  }
+  if (!requireLogin()) return
 
   if (!confirm('确定要删除这条评论吗？')) {
     return
@@ -377,9 +340,7 @@ async function deleteComment(comment) {
 }
 
 async function deletePost() {
-  if (!requireLogin()) {
-    return
-  }
+  if (!requireLogin()) return
 
   if (!confirm('确定要删除这篇帖子吗？删除后普通用户将无法再看到。')) {
     return
@@ -396,11 +357,7 @@ async function deletePost() {
 }
 
 function canDeleteComment(comment) {
-  if (!comment || !currentUser.value) {
-    return false
-  }
-
-  if (!comment.authorId) {
+  if (!comment || !currentUser.value || !comment.authorId) {
     return false
   }
 
@@ -423,66 +380,33 @@ function requireLogin() {
 }
 
 function normalizeFileUrl(url) {
-  if (!url) {
-    return ''
-  }
-
-  if (/^https?:\/\//i.test(url)) {
-    return url
-  }
-
-  const base = import.meta.env.VITE_API_BASE_URL || ''
-
-  if (!base) {
-    return url
-  }
-
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
   return `${base}${url.startsWith('/') ? url : `/${url}`}`
 }
 
 function getAvatarText(name) {
-  if (!name) {
-    return '养'
-  }
-
+  if (!name) return '养'
   return String(name).slice(0, 1)
 }
 
 function formatTime(value) {
-  if (!value) {
-    return ''
-  }
-
+  if (!value) return ''
   return String(value).replace('T', ' ').slice(0, 16)
 }
 
 function formatRating(value) {
-  if (value === null || value === undefined || value === '') {
-    return '暂无'
-  }
-
+  if (value === null || value === undefined || value === '') return '暂无'
   const number = Number(value)
-
-  if (Number.isNaN(number)) {
-    return '暂无'
-  }
-
+  if (Number.isNaN(number)) return '暂无'
   return number.toFixed(1)
 }
 
 function formatBudget(min, max) {
-  if (min && max) {
-    return `${min} - ${max} 元/月`
-  }
-
-  if (min) {
-    return `${min} 元/月以上`
-  }
-
-  if (max) {
-    return `${max} 元/月以内`
-  }
-
+  if (min && max) return `${min} - ${max} 元/月`
+  if (min) return `${min} 元/月以上`
+  if (max) return `${max} 元/月以内`
   return '未填写'
 }
 
@@ -509,8 +433,8 @@ function goInstitution(id) {
 .detail-page {
   min-height: 100vh;
   height: auto;
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: visible;
   background:
     radial-gradient(circle at top left, rgba(62, 184, 151, 0.16), transparent 32%),
     linear-gradient(180deg, #f5faf8 0%, #eef4f2 100%);
@@ -621,8 +545,7 @@ function goInstitution(id) {
 
 .side-card {
   padding: 22px;
-  position: sticky;
-  top: 20px;
+  position: static;
 }
 
 .post-meta-row {
@@ -794,8 +717,14 @@ function goInstitution(id) {
 }
 
 .danger-btn {
-  background: rgba(217, 83, 79, 0.12);
-  color: #d9534f;
+  min-width: 78px;
+  background: #d9534f;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(217, 83, 79, 0.22);
+}
+
+.danger-btn:hover {
+  background: #c94440;
 }
 
 .comment-card {

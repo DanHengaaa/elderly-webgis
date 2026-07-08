@@ -42,9 +42,9 @@
       机构工作台
     </button>
 
-    <button @click="goProfile">
-  个人中心
-</button>
+    <button v-if="currentUser.roleCode === 'CUSTOMER'" @click="goCustomerCenter">
+      个人中心
+    </button>
 
     <button @click="logout">
       退出登录
@@ -411,10 +411,6 @@
                 <span class="info-label">月费</span>
                 <strong>{{ formatFee(item.monthlyFeeBase) }}</strong>
               </div>
-              <div>
-                <span class="info-label">可达性</span>
-                <strong class="accessibility-text">待计算</strong>
-              </div>
             </div>
 
             <div class="address-line">
@@ -476,8 +472,8 @@
 
 <script setup>
 import GeoJSON from 'ol/format/GeoJSON.js'
-import { nextTick, onMounted, reactive, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { nextTick, onMounted, reactive, ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Map from 'ol/Map.js'
 import View from 'ol/View.js'
 import Overlay from 'ol/Overlay.js'
@@ -494,6 +490,7 @@ import axios from 'axios'
 import { getCurrentUser, clearAuth } from '../utils/auth'
 const institutions = ref([])
 const router = useRouter()
+const route = useRoute()
 const selectedInstitution = ref(null)
 const selectedPoi = ref(null)
 const loading = ref(false)
@@ -629,9 +626,9 @@ function goInstitutionConsole() {
   router.push('/institution-console')
 }
 
-function goProfile() {
+function goCustomerCenter() {
   showUserMenu.value = false
-  router.push('/profile')
+  router.push('/map')
 }
 
 function logout() {
@@ -1071,6 +1068,8 @@ async function loadInstitutions() {
     institutions.value = response.data
     renderMarkers(response.data)
     updateWmsFilter()
+    await nextTick()
+    focusInstitutionFromRoute()
   } catch (error) {
     console.error('加载机构失败：', error)
     alert('加载机构失败，请检查后端服务、接口路径或浏览器控制台')
@@ -1099,6 +1098,33 @@ function renderMarkers(data) {
     feature.setId(item.id)
     markerSource.addFeature(feature)
   })
+}
+
+
+function getRouteFocusInstitutionId() {
+  const value = route.query.institutionId
+    || route.query.focusInstitutionId
+    || route.query.selectedInstitutionId
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
+}
+
+function focusInstitutionFromRoute() {
+  const id = getRouteFocusInstitutionId()
+
+  if (!id || !institutions.value || institutions.value.length === 0) {
+    return
+  }
+
+  const target = institutions.value.find(item => String(item.id) === String(id))
+
+  if (target) {
+    focusInstitution(target)
+  }
 }
 
 function focusInstitution(item) {
@@ -1328,6 +1354,15 @@ onMounted(async () => {
   await loadInstitutions()
   updateMapSize()
 })
+
+watch(
+  () => [route.query.institutionId, route.query.focusInstitutionId, route.query.selectedInstitutionId],
+  () => {
+    nextTick(() => {
+      focusInstitutionFromRoute()
+    })
+  }
+)
 
 function toggleVisitPickMode() {
   visitPickMode.value = !visitPickMode.value
