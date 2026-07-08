@@ -13,6 +13,24 @@ spring:
       ddl-auto: none
     open-in-view: false
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 30MB
+
+jwt:
+  secret: ${JWT_SECRET:elderly-care-platform-rbac-secret-key-please-change-in-production-2026}
+  expire-hours: 24
+
 logging:
   level:
     org.springframework.jdbc.core: info
+
+tianditu:
+  tk: 01c5845db0eb91889d42399c5a5b4f16
+
+llm:
+  enabled: true
+  base-url: https://api.deepseek.com
+  api-key: ${DEEPSEEK_API_KEY:}
+  model: deepseek-v4-flash

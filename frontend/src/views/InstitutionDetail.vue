@@ -251,6 +251,62 @@
               暂无图片资料。
             </p>
           </section>
+
+          <section class="detail-section community-section">
+  <div class="section-title-row">
+    <div>
+      <h2>社区口碑与探院笔记</h2>
+      <p>来自用户真实探院记录、照护经验和社区互动内容</p>
+    </div>
+
+    <button @click="goCommunityByInstitution">
+      查看更多
+    </button>
+  </div>
+
+  <div v-if="communityLoading" class="community-summary-card">
+    AI 正在生成社区口碑摘要...
+  </div>
+
+  <div v-else-if="communitySummary" class="community-summary-card">
+    <div class="summary-head">
+      <strong>AI 社区口碑摘要</strong>
+      <span>{{ communitySummary.generatedBy }} 生成</span>
+    </div>
+
+    <p>{{ communitySummary.summary }}</p>
+
+    <div class="summary-meta">
+      <span>社区笔记 {{ communitySummary.postCount }} 篇</span>
+      <span v-if="communitySummary.avgRating">平均评分 {{ communitySummary.avgRating }}</span>
+    </div>
+  </div>
+
+  <div v-if="communityPosts.length" class="community-post-list">
+    <article
+      v-for="post in communityPosts"
+      :key="post.id"
+      class="community-post-mini"
+      @click="goCommunityPost(post.id)"
+    >
+      <div>
+        <span>{{ post.postTypeText }}</span>
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.contentSummary }}</p>
+      </div>
+
+      <strong v-if="post.overallRating">
+        {{ Number(post.overallRating).toFixed(1) }}
+      </strong>
+    </article>
+  </div>
+
+  <div v-else class="community-empty">
+    暂无社区笔记，欢迎发布第一篇探院记录。
+  </div>
+</section>
+
+
         </aside>
       </section>
     </main>
@@ -279,6 +335,9 @@ const detail = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
 const detailMiniMapRef = ref(null)
+const communityPosts = ref([])
+const communitySummary = ref(null)
+const communityLoading = ref(false)
 
 let detailMiniMap = null
 
@@ -559,16 +618,193 @@ function formatNullable(value) {
 
 watch(
   () => route.params.id,
-  () => {
-    loadDetail()
+  async () => {
+    await loadDetail()
+    fetchCommunityPosts()
+    fetchCommunitySummary()
   }
 )
 
-onMounted(() => {
-  loadDetail()
+onMounted(async () => {
+  await loadDetail()
+  fetchCommunityPosts()
+  fetchCommunitySummary()
 })
+
+async function fetchCommunityPosts() {
+  try {
+    const response = await axios.get(`/api/community/institutions/${route.params.id}/posts`)
+    communityPosts.value = response.data || []
+  } catch (error) {
+    console.error('加载机构社区笔记失败：', error)
+  }
+}
+
+async function fetchCommunitySummary() {
+  communityLoading.value = true
+
+  try {
+    const response = await axios.get(`/api/community/institutions/${route.params.id}/summary`, {
+      params: {
+        providerId: 'deepseek'
+      }
+    })
+
+    communitySummary.value = response.data
+  } catch (error) {
+    console.error('加载机构社区口碑摘要失败：', error)
+  } finally {
+    communityLoading.value = false
+  }
+}
+
+function goCommunityPost(id) {
+  router.push(`/community/posts/${id}`)
+}
+
+function goCommunityByInstitution() {
+  router.push({
+    path: '/community',
+    query: {
+      institutionId: route.params.id
+    }
+  })
+}
+
 
 onBeforeUnmount(() => {
   destroyMiniMap()
 })
 </script>
+
+<style scoped>
+.community-section {
+  margin-top: 22px;
+}
+
+.section-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.section-title-row h2 {
+  margin: 0;
+  color: #2e7d6b;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.section-title-row p {
+  margin: 6px 0 0;
+  color: #52606d;
+}
+
+.section-title-row button {
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  padding: 0 16px;
+  background: #2e7d6b;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.community-summary-card {
+  margin-top: 16px;
+  border-radius: 20px;
+  background: #f7faf9;
+  border: 1px solid #d9e0e8;
+  padding: 18px;
+  color: #52606d;
+  line-height: 1.8;
+}
+
+.summary-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.summary-head strong {
+  color: #2e7d6b;
+  font-size: 16px;
+}
+
+.summary-head span {
+  color: #9aa5b1;
+  font-size: 12px;
+}
+
+.summary-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.summary-meta span {
+  border-radius: 999px;
+  background: #e3f1ed;
+  color: #2e7d6b;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.community-post-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.community-post-mini {
+  border: 1px solid #d9e0e8;
+  border-radius: 18px;
+  padding: 14px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.community-post-mini:hover {
+  background: #f7faf9;
+}
+
+.community-post-mini span {
+  color: #e8845b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.community-post-mini h3 {
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+.community-post-mini p {
+  margin: 0;
+  color: #52606d;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.community-post-mini strong {
+  color: #2e7d6b;
+  font-size: 22px;
+}
+
+.community-empty {
+  margin-top: 16px;
+  border-radius: 18px;
+  background: #f5f7f9;
+  padding: 22px;
+  text-align: center;
+  color: #7b8794;
+}
+</style>

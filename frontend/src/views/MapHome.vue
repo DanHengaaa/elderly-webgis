@@ -21,8 +21,38 @@
         <button class="elder-mode-btn" @click="toggleElderMode">
           {{ elderMode ? '退出老年模式' : '老年模式' }}
         </button>
-        <button class="avatar-btn">用户</button>
       </div>
+
+      <div class="user-menu">
+  <button class="user-btn" @click="handleUserClick">
+    {{ currentUser ? (currentUser.nickname || currentUser.username) : '用户' }}
+  </button>
+
+  <div v-if="showUserMenu && currentUser" class="user-dropdown">
+    <div class="user-info">
+      <strong>{{ currentUser.nickname || currentUser.username }}</strong>
+      <span>{{ currentUser.roleName || currentUser.roleCode }}</span>
+    </div>
+
+    <button v-if="currentUser.roleCode === 'ADMIN'" @click="goAdmin">
+      管理员后台
+    </button>
+
+    <button v-if="currentUser.roleCode === 'INSTITUTION'" @click="goInstitutionConsole">
+      机构工作台
+    </button>
+
+    <button v-if="currentUser.roleCode === 'CUSTOMER'" @click="goCustomerCenter">
+      个人中心
+    </button>
+
+    <button @click="logout">
+      退出登录
+    </button>
+  </div>
+</div>
+
+
     </header>
 
     <section class="search-toolbar">
@@ -462,13 +492,16 @@
     <div class="mobile-actions">
       <button @click="filterPanelOpen = true">筛选图层</button>
       <button @click="listPanelOpen = true">机构列表 {{ institutions.length }}</button>
+      <button @click="toggleCommunityHeatLayer">
+  社区热度
+</button>
     </div>
   </div>
 </template>
 
 <script setup>
 import GeoJSON from 'ol/format/GeoJSON.js'
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Map from 'ol/Map.js'
 import View from 'ol/View.js'
@@ -483,7 +516,7 @@ import Point from 'ol/geom/Point.js'
 import { fromLonLat, toLonLat } from 'ol/proj.js'
 import { Style, Circle as CircleStyle, Fill, Stroke } from 'ol/style.js'
 import axios from 'axios'
-
+import { getCurrentUser, clearAuth } from '../utils/auth'
 const institutions = ref([])
 const router = useRouter()
 const selectedInstitution = ref(null)
@@ -518,6 +551,7 @@ let visitStartLayer = null
 let visitIsochroneLayer = null
 let visitReachableInstitutionLayer = null
 
+
 const geoJsonFormat = new GeoJSON()
 
 
@@ -535,6 +569,9 @@ let parkPoiLayer = null
 
 let poiPopupOverlay = null
 let selectedFeature = null
+let communityHeatLayer = null
+let communityHeatVisible = false
+
 
 const tiandituTk = '01c5845db0eb91889d42399c5a5b4f16'
 
@@ -602,6 +639,43 @@ const selectedStyle = new Style({
   })
 })
 
+const showUserMenu = ref(false)
+
+const currentUser = computed(() => {
+  return getCurrentUser()
+})
+
+function handleUserClick() {
+  if (!currentUser.value) {
+    router.push('/login')
+    return
+  }
+
+  showUserMenu.value = !showUserMenu.value
+}
+
+function goAdmin() {
+  showUserMenu.value = false
+  router.push('/admin')
+}
+
+function goInstitutionConsole() {
+  showUserMenu.value = false
+  router.push('/institution-console')
+}
+
+function goCustomerCenter() {
+  showUserMenu.value = false
+  router.push('/map')
+}
+
+function logout() {
+  clearAuth()
+  showUserMenu.value = false
+  router.push('/login')
+}
+
+
 function buildTiandituUrls(layerName) {
   const subdomains = ['0', '1', '2', '3', '4', '5', '6', '7']
 
@@ -642,6 +716,77 @@ function createPoiWmsLayer(type) {
       crossOrigin: 'anonymous'
     })
   })
+}
+
+async function loadCommunityHeatLayer() {
+  try {
+    const response = await axios.get('/api/community/heat')
+    const points = response.data || []
+
+    const features = points
+      .filter(item => item.lon && item.lat)
+      .map(item => {
+        const feature = new Feature({
+          geometry: new Point(fromLonLat([Number(item.lon), Number(item.lat)])),
+          institutionId: item.institutionId,
+          institutionName: item.institutionName,
+          postCount: item.postCount,
+          avgRating: item.avgRating
+        })
+
+        return feature
+      })
+
+    const source = new VectorSource({
+      features
+    })
+
+    communityHeatLayer = new VectorLayer({
+      source,
+      zIndex: 80,
+      visible: false,
+      style: feature => {
+        const count = Number(feature.get('postCount') || 1)
+        const radius = Math.min(10 + count * 3, 28)
+
+        return new Style({
+          image: new CircleStyle({
+            radius,
+            fill: new Fill({
+              color: 'rgba(232, 132, 91, 0.35)'
+            }),
+            stroke: new Stroke({
+              color: 'rgba(232, 132, 91, 0.95)',
+              width: 2
+            })
+          }),
+          text: new Text({
+            text: String(count),
+            fill: new Fill({
+              color: '#ffffff'
+            }),
+            stroke: new Stroke({
+              color: 'rgba(0,0,0,0.35)',
+              width: 2
+            }),
+            font: 'bold 13px sans-serif'
+          })
+        })
+      }
+    })
+
+    map.addLayer(communityHeatLayer)
+  } catch (error) {
+    console.error('加载社区热度图层失败：', error)
+  }
+}
+
+function toggleCommunityHeatLayer() {
+  communityHeatVisible = !communityHeatVisible
+
+  if (communityHeatLayer) {
+    communityHeatLayer.setVisible(communityHeatVisible)
+  }
 }
 
 function initMap() {
@@ -750,6 +895,7 @@ visitStartLayer = new VectorLayer({
       maxZoom: 18
     })
   })
+  loadCommunityHeatLayer()
 
   const popupElement = document.getElementById('poi-popup')
   poiPopupOverlay = new Overlay({
@@ -1400,3 +1546,78 @@ function focusReachableInstitution(item) {
 
 
 </script>
+
+<style scoped>
+.user-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.user-btn {
+  height: 44px;
+  border: 1px solid #d9e0e8;
+  border-radius: 999px;
+  padding: 0 20px;
+  background: #ffffff;
+  color: #1f2933;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.user-btn:hover {
+  border-color: #2e7d6b;
+  color: #2e7d6b;
+  background: #f7faf9;
+}
+
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: 54px;
+  width: 190px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #d9e0e8;
+  box-shadow: 0 16px 36px rgba(31, 41, 51, 0.14);
+  padding: 10px;
+  z-index: 999;
+}
+
+.user-info {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f5;
+  margin-bottom: 6px;
+}
+
+.user-info strong {
+  display: block;
+  color: #1f2933;
+  font-size: 15px;
+}
+
+.user-info span {
+  display: block;
+  margin-top: 4px;
+  color: #7b8794;
+  font-size: 12px;
+}
+
+.user-dropdown button {
+  width: 100%;
+  height: 36px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #52606d;
+  font-weight: 800;
+  text-align: left;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.user-dropdown button:hover {
+  background: #e3f1ed;
+  color: #2e7d6b;
+}
+</style>
