@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,12 @@ public class InstitutionRepository {
                     i.available_beds,
                     i.monthly_fee_base,
                     i.price_tier,
+                    (
+                        SELECT string_agg(DISTINCT s.service_type, ',')
+                        FROM institution_services s
+                        WHERE s.institution_id = i.id
+                          AND s.is_available IS DISTINCT FROM FALSE
+                    ) AS service_types,
                     i.rating_avg,
                     i.rating_count,
                     i.cover_image_url,
@@ -97,16 +104,24 @@ public class InstitutionRepository {
         }
 
         if (serviceType != null && !serviceType.isBlank()) {
+            List<String> serviceTypeAliases = serviceTypeAliases(serviceType.trim());
+            String placeholders = String.join(",", Collections.nCopies(serviceTypeAliases.size(), "?"));
+
             sql.append("""
                     AND EXISTS (
                         SELECT 1
                         FROM institution_services s
                         WHERE s.institution_id = i.id
-                          AND s.is_available = TRUE
-                          AND s.service_type = ?
+                          AND s.is_available IS DISTINCT FROM FALSE
+                          AND s.service_type IN (
+                    """)
+                    .append(placeholders)
+                    .append("""
+                          )
                     )
                     """);
-            params.add(serviceType.trim());
+
+            params.addAll(serviceTypeAliases);
         }
 
         sql.append("""
@@ -314,6 +329,9 @@ public class InstitutionRepository {
                 priceTier,
                 priceTierText(priceTier),
 
+                rs.getString("service_types"),
+                serviceTypesText(rs.getString("service_types")),
+
                 rs.getBigDecimal("rating_avg"),
                 getInteger(rs, "rating_count"),
 
@@ -465,6 +483,64 @@ public class InstitutionRepository {
             case 2 -> "公办民营";
             case 3 -> "民营";
             default -> "未知性质";
+        };
+    }
+
+    private List<String> serviceTypeAliases(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+
+        String normalized = value.trim();
+
+        return switch (normalized) {
+            case "selfCare", "self_care", "SELF_CARE", "基本自理", "自理", "自理照护" ->
+                    List.of("selfCare", "self_care", "SELF_CARE", "基本自理", "自理", "自理照护");
+            case "semiCare", "semi_care", "SEMI_CARE", "半失能", "半失能照护" ->
+                    List.of("semiCare", "semi_care", "SEMI_CARE", "半失能", "半失能照护");
+            case "nursing", "NURSING", "失能", "失能护理" ->
+                    List.of("nursing", "NURSING", "失能", "失能护理");
+            case "dementia", "DEMENTIA", "失智", "认知症", "认知症照护" ->
+                    List.of("dementia", "DEMENTIA", "失智", "认知症", "认知症照护");
+            case "rehab", "REHAB", "康复", "康复护理", "术后康复" ->
+                    List.of("rehab", "REHAB", "康复", "康复护理", "术后康复");
+            case "medical", "medicalCare", "medical_care", "MEDICAL_CARE", "医养结合", "医养结合照护" ->
+                    List.of("medical", "medicalCare", "medical_care", "MEDICAL_CARE", "医养结合", "医养结合照护");
+            default -> List.of(normalized);
+        };
+    }
+
+    private String serviceTypesText(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        List<String> names = new ArrayList<>();
+
+        for (String item : value.split(",")) {
+            String text = serviceTypeText(item);
+
+            if (text != null && !text.isBlank() && !names.contains(text)) {
+                names.add(text);
+            }
+        }
+
+        return names.isEmpty() ? null : String.join("、", names);
+    }
+
+    private String serviceTypeText(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return switch (value.trim()) {
+            case "selfCare", "self_care", "SELF_CARE", "基本自理", "自理", "自理照护" -> "基本自理";
+            case "semiCare", "semi_care", "SEMI_CARE", "半失能", "半失能照护" -> "半失能照护";
+            case "nursing", "NURSING", "失能", "失能护理" -> "失能护理";
+            case "dementia", "DEMENTIA", "失智", "认知症", "认知症照护" -> "认知症照护";
+            case "rehab", "REHAB", "康复", "康复护理", "术后康复" -> "康复护理";
+            case "medical", "medicalCare", "medical_care", "MEDICAL_CARE", "医养结合", "医养结合照护" -> "医养结合";
+            default -> value.trim();
         };
     }
 

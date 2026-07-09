@@ -42,7 +42,7 @@
       机构工作台
     </button>
 
-    <button v-if="currentUser.roleCode === 'CUSTOMER'" @click="goCustomerCenter">
+    <button @click="goProfile">
       个人中心
     </button>
 
@@ -99,7 +99,7 @@
           <input
             v-model="visitSearchKeyword"
             class="combined-input visit-input"
-            placeholder="输入起点，例如：河海大学 / 新街口"
+            placeholder="输入起点，例如：新街口 / 鼓楼医院"
             @keyup.enter="searchVisitStart"
           />
 
@@ -243,12 +243,12 @@
           护理类型
           <select v-model="filters.serviceType" @change="loadInstitutions">
             <option value="">全部护理类型</option>
-            <option value="自理">自理</option>
-            <option value="半失能">半失能</option>
-            <option value="失能">失能</option>
-            <option value="失智">失智</option>
-            <option value="认知症照护">认知症照护</option>
-            <option value="术后康复">术后康复</option>
+            <option value="selfCare">基本自理</option>
+            <option value="semiCare">半失能照护</option>
+            <option value="nursing">失能护理</option>
+            <option value="dementia">认知症照护</option>
+            <option value="rehab">康复护理</option>
+            <option value="medical">医养结合</option>
           </select>
         </label>
 
@@ -395,6 +395,7 @@
             <div class="tag-row">
               <span class="tag primary">{{ item.institutionCategoryText || '未知性质' }}</span>
               <span v-if="item.gradeLevel" class="tag">{{ item.gradeLevel }}</span>
+              <span v-if="item.serviceTypeText" class="tag care-tag">{{ item.serviceTypeText }}</span>
               <span class="tag">{{ item.priceTierText || '未设置价位' }}</span>
             </div>
 
@@ -424,9 +425,6 @@
               <button class="small-btn" @click.stop="openInstitutionDetail(item)">
   查看详情
 </button>
-              <button class="small-btn" @click.stop="addToCompare(item)">
-                加入对比
-              </button>
             </div>
           </div>
         </article>
@@ -448,16 +446,15 @@
       <div class="selected-meta">
         <span>{{ selectedInstitution.institutionCategoryText || '未知性质' }}</span>
         <span>{{ selectedInstitution.gradeLevel || '暂无等级' }}</span>
+        <span v-if="selectedInstitution.serviceTypeText">{{ selectedInstitution.serviceTypeText }}</span>
         <span>{{ formatFee(selectedInstitution.monthlyFeeBase) }}</span>
       </div>
 
       <div class="selected-actions">
-  <button class="primary-btn">问 AI 伴诊</button>
-  <button class="secondary-btn">加入对比</button>
-  <button class="secondary-btn" @click="openInstitutionDetail(selectedInstitution)">
-    完整详情
-  </button>
-</div>
+        <button class="secondary-btn" @click="openInstitutionDetail(selectedInstitution)">
+          完整详情
+        </button>
+      </div>
     </section>
 
     <div class="mobile-actions">
@@ -497,7 +494,7 @@ const loading = ref(false)
 
 const filterPanelOpen = ref(false)
 const listPanelOpen = ref(false)
-const elderMode = ref(false)
+const elderMode = ref(localStorage.getItem('elderMode') === 'true')
 
 const originAddress = ref('')
 const activeTravelMode = ref('drive')
@@ -626,9 +623,9 @@ function goInstitutionConsole() {
   router.push('/institution-console')
 }
 
-function goCustomerCenter() {
+function goProfile() {
   showUserMenu.value = false
-  router.push('/map')
+  router.push('/profile')
 }
 
 function logout() {
@@ -1321,6 +1318,7 @@ function resetFilters() {
 
 function toggleElderMode() {
   elderMode.value = !elderMode.value
+  localStorage.setItem('elderMode', elderMode.value ? 'true' : 'false')
   document.body.classList.toggle('elder-mode', elderMode.value)
   updateMapSize()
 }
@@ -1350,6 +1348,7 @@ function formatScore(value) {
 }
 
 onMounted(async () => {
+  document.body.classList.toggle('elder-mode', elderMode.value)
   initMap()
   await loadInstitutions()
   updateMapSize()
@@ -2459,6 +2458,12 @@ function focusReachableInstitution(item) {
   .user-menu {
     margin-left: 8px !important;
   }
+}
+
+
+.care-tag {
+  background: rgba(46, 125, 107, 0.10);
+  color: #1f6f61;
 }
 
 </style>

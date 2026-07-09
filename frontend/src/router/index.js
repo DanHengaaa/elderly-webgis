@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import UserProfilePage from '../views/UserProfilePage.vue'
+
 import MapHome from '../views/MapHome.vue'
 import InstitutionDetail from '../views/InstitutionDetail.vue'
 import SmartAssessment from '../views/SmartAssessment.vue'
@@ -10,6 +10,7 @@ import CommunityPostDetail from '../views/CommunityPostDetail.vue'
 import CommunityPublish from '../views/CommunityPublish.vue'
 import LoginPage from '../views/LoginPage.vue'
 import RegisterPage from '../views/RegisterPage.vue'
+import UserProfilePage from '../views/UserProfilePage.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import InstitutionConsole from '../views/InstitutionConsole.vue'
 import { getCurrentUser, isLoggedIn } from '../utils/auth'
@@ -21,19 +22,6 @@ import InstitutionApplication from '../views/InstitutionApplication.vue'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-{
-  path: '/profile',
-  name: 'UserProfilePage',
-  component: UserProfilePage,
-  meta: {
-    requiresAuth: true
-  }
-},
-
-
-
-
-
     {
       path: '/',
       redirect: '/map'
@@ -82,10 +70,7 @@ const router = createRouter({
 {
   path: '/community/publish',
   name: 'CommunityPublish',
-  component: CommunityPublish,
-  meta: {
-    requiresAuth: true
-  }
+  component: CommunityPublish
 },
 {
   path: '/login',
@@ -96,6 +81,14 @@ const router = createRouter({
   path: '/register',
   name: 'RegisterPage',
   component: RegisterPage
+},
+{
+  path: '/profile',
+  name: 'UserProfilePage',
+  component: UserProfilePage,
+  meta: {
+    requiresAuth: true
+  }
 },
 {
   path: '/admin',

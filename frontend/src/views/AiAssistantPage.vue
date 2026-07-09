@@ -45,7 +45,7 @@
           <div class="ai-start-search">
             <input
               v-model="startKeyword"
-              placeholder="例如：新街口、河海大学、鼓楼医院"
+              placeholder="例如：新街口、鼓楼医院"
               @keyup.enter="searchStart"
             />
             <button @click="searchStart">

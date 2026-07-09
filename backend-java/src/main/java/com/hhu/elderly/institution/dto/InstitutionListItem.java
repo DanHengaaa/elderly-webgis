@@ -19,6 +19,9 @@ public record InstitutionListItem(
         Integer priceTier,
         String priceTierText,
 
+        String serviceTypes,
+        String serviceTypeText,
+
         BigDecimal ratingAvg,
         Integer ratingCount,
 

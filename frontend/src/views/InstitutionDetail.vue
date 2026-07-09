@@ -132,7 +132,7 @@
                 :key="service.id"
                 class="service-card"
               >
-                <strong>{{ service.serviceType || '未命名服务' }}</strong>
+                <strong>{{ formatServiceType(service.serviceType) }}</strong>
                 <p>{{ service.serviceDetail || '暂无服务说明' }}</p>
               </div>
             </div>
@@ -557,6 +557,37 @@ function normalizeFileUrl(url) {
 
 function goBack() {
   router.push('/map')
+}
+
+
+function formatServiceType(value) {
+  if (value === null || value === undefined || value === '') {
+    return '未命名服务'
+  }
+
+  const text = String(value).trim()
+
+  const serviceTypeMap = {
+    selfCare: '基本自理',
+    self_care: '基本自理',
+    SELF_CARE: '基本自理',
+    semiCare: '半失能照护',
+    semi_care: '半失能照护',
+    SEMI_CARE: '半失能照护',
+    nursing: '失能护理',
+    NURSING: '失能护理',
+    dementia: '认知症照护',
+    DEMENTIA: '认知症照护',
+    rehab: '康复护理',
+    REHAB: '康复护理',
+    medicalCare: '医养结合',
+    medical_care: '医养结合',
+    medical: '医养结合',
+    hospice: '安宁疗护',
+    HOSPICE: '安宁疗护'
+  }
+
+  return serviceTypeMap[text] || text
 }
 
 function formatFee(value) {

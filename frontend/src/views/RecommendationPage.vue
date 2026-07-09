@@ -97,7 +97,7 @@
         <div class="start-search-row">
           <input
             v-model="startKeyword"
-            placeholder="输入探视起点，例如：新街口 / 河海大学"
+            placeholder="输入探视起点，例如：新街口 / 鼓楼医院"
             @keyup.enter="searchStart"
           />
 

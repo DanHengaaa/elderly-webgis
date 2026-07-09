@@ -1,0 +1,211 @@
+/*
+ * 老年模式全局样式
+ * 使用方式：body 添加 class="elder-mode" 后自动生效。
+ * MapHome.vue 中的“老年模式”按钮会写入 localStorage，刷新或切换页面后仍然保持。
+ */
+
+body.elder-mode {
+  font-size: 18px !important;
+  line-height: 1.75 !important;
+  letter-spacing: 0.01em;
+}
+
+/* 基础文本放大 */
+body.elder-mode p,
+body.elder-mode span,
+body.elder-mode strong,
+body.elder-mode label,
+body.elder-mode div,
+body.elder-mode article,
+body.elder-mode li,
+body.elder-mode td,
+body.elder-mode th {
+  font-size: 1.08em;
+  line-height: 1.75;
+}
+
+/* 标题层级放大，同时保持空间 */
+body.elder-mode h1 {
+  font-size: 34px !important;
+  line-height: 1.35 !important;
+}
+
+body.elder-mode h2 {
+  font-size: 27px !important;
+  line-height: 1.4 !important;
+}
+
+body.elder-mode h3 {
+  font-size: 22px !important;
+  line-height: 1.45 !important;
+}
+
+/* 表单控件与按钮更适合老年用户点击 */
+body.elder-mode button,
+body.elder-mode input,
+body.elder-mode select,
+body.elder-mode textarea {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+}
+
+body.elder-mode button {
+  min-height: 48px !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+body.elder-mode input,
+body.elder-mode select {
+  min-height: 48px !important;
+}
+
+body.elder-mode textarea {
+  min-height: 112px !important;
+}
+
+/* 卡片、表单和列表加大间距，避免字号变大后拥挤 */
+body.elder-mode .card,
+body.elder-mode .info-card,
+body.elder-mode .form-card,
+body.elder-mode .content-card,
+body.elder-mode .side-card,
+body.elder-mode .institution-card,
+body.elder-mode .post-card,
+body.elder-mode .result-card,
+body.elder-mode .panel,
+body.elder-mode .section-card,
+body.elder-mode .admin-card,
+body.elder-mode .application-card,
+body.elder-mode .console-card {
+  padding: 28px !important;
+  border-radius: 28px !important;
+}
+
+/* 通用列表项 */
+body.elder-mode .list-item,
+body.elder-mode .institution-list-card,
+body.elder-mode .institution-item,
+body.elder-mode .post-item,
+body.elder-mode .comment-item,
+body.elder-mode .review-item {
+  padding: 20px !important;
+  gap: 14px !important;
+}
+
+/* 顶部导航在老年模式下允许换行，避免挤压 */
+body.elder-mode .app-header,
+body.elder-mode .ai-topbar,
+body.elder-mode .top-bar,
+body.elder-mode .detail-topbar,
+body.elder-mode .community-topbar,
+body.elder-mode .publish-topbar,
+body.elder-mode .apply-topbar,
+body.elder-mode .console-header,
+body.elder-mode .admin-topbar,
+body.elder-mode .profile-header {
+  min-height: 86px !important;
+  height: auto !important;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  gap: 16px !important;
+}
+
+/* 导航按钮换行且变大 */
+body.elder-mode .desktop-nav,
+body.elder-mode .nav-actions,
+body.elder-mode .top-actions,
+body.elder-mode .header-actions,
+body.elder-mode .action-row,
+body.elder-mode .button-row,
+body.elder-mode .form-actions {
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+body.elder-mode .nav-item,
+body.elder-mode .ghost-btn,
+body.elder-mode .primary-btn,
+body.elder-mode .secondary-btn,
+body.elder-mode .danger-btn {
+  min-height: 48px !important;
+  border-radius: 18px !important;
+}
+
+/* 地图主页：顶部合并工具栏在老年模式下变成上下布局，避免与右侧列表互相遮挡 */
+body.elder-mode .combined-top-panel {
+  width: min(900px, calc(100vw - 440px)) !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  padding: 16px !important;
+}
+
+body.elder-mode .combined-section {
+  padding: 12px !important;
+}
+
+body.elder-mode .combined-section-header h3,
+body.elder-mode .tool-title {
+  font-size: 20px !important;
+}
+
+body.elder-mode .visit-action-row,
+body.elder-mode .search-row,
+body.elder-mode .visit-row,
+body.elder-mode .combined-input-row {
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+body.elder-mode .visit-action-row input,
+body.elder-mode .search-row input,
+body.elder-mode .visit-row input,
+body.elder-mode .combined-input-row input {
+  flex: 1 1 260px !important;
+}
+
+/* 右侧机构列表：字号放大后加大滚动区域内部间距 */
+body.elder-mode .right-panel,
+body.elder-mode .institution-list-panel {
+  font-size: 18px !important;
+}
+
+body.elder-mode .list-header,
+body.elder-mode .list-title-right {
+  padding-right: 8px !important;
+}
+
+body.elder-mode .institution-card h3,
+body.elder-mode .institution-item h3 {
+  font-size: 21px !important;
+}
+
+/* 表格页面：增加单元格空间 */
+body.elder-mode table th,
+body.elder-mode table td {
+  padding: 14px 16px !important;
+}
+
+/* 弹出下拉框层级保持在地图图层按钮之上 */
+body.elder-mode .user-dropdown {
+  font-size: 18px !important;
+  min-width: 190px !important;
+}
+
+/* 小屏幕下老年模式进一步转单列 */
+@media (max-width: 1100px) {
+  body.elder-mode .combined-top-panel {
+    left: 20px !important;
+    right: 20px !important;
+    width: auto !important;
+    transform: none !important;
+  }
+
+  body.elder-mode .profile-grid,
+  body.elder-mode .detail-layout,
+  body.elder-mode .community-layout,
+  body.elder-mode .console-layout,
+  body.elder-mode .admin-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
